@@ -2,6 +2,9 @@ import { initializeApp, getApps, cert } from "firebase-admin/app";
 import { Auth, getAuth } from "firebase-admin/auth";
 import { Firestore, getFirestore } from "firebase-admin/firestore";
 
+// Empêche l'importation de ce fichier côté client
+import "server-only";
+
 interface FirebaseAdminConfig {
   auth: Auth;
   db: Firestore;

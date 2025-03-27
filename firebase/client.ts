@@ -1,9 +1,8 @@
 import { initializeApp, getApp, getApps } from "firebase/app";
 import { getAuth } from "firebase/auth";
-import { getFirestore } from "firebase-admin/firestore";
+import { getFirestore } from "firebase/firestore";
 
-// Your web app's Firebase configuration
-// For Firebase JS SDK v7.20.0 and later, measurementId is optional
+// La configuration Firebase pour le client
 const firebaseConfig = {
   apiKey: "AIzaSyCQfElaSfzKTMAlfQ3FhqW1UkgrtnWV8Bw",
   authDomain: "prepwise-89804.firebaseapp.com",
@@ -15,7 +14,7 @@ const firebaseConfig = {
 };
 
 // Initialize Firebase
-const app = !getApps.length ? initializeApp(firebaseConfig) : getApp();
+const app = getApps().length ? getApp() : initializeApp(firebaseConfig);
 
 export const auth = getAuth(app);
 export const db = getFirestore(app);
