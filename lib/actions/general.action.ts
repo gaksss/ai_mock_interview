@@ -17,7 +17,15 @@ export async function createFeedback(params: CreateFeedbackParams) {
       )
       .join("");
 
-    const { object } = await generateObject({
+    const {
+      object: {
+        totalScore,
+        categoryScores,
+        strengths,
+        areasForImprovement,
+        finalAssessment,
+      },
+    } = await generateObject({
       model: google("gemini-2.0-flash-001", {
         structuredOutputs: false,
       }),
@@ -38,28 +46,21 @@ export async function createFeedback(params: CreateFeedbackParams) {
         "You are a professional interviewer analyzing a mock interview. Your task is to evaluate the candidate based on structured categories",
     });
 
-    const feedback = {
-      interviewId: interviewId,
-      userId: userId,
-      totalScore: object.totalScore,
-      categoryScores: object.categoryScores,
-      strengths: object.strengths,
-      areasForImprovement: object.areasForImprovement,
-      finalAssessment: object.finalAssessment,
+    const feedback = await db.collection("feedback").add({
+      interviewId,
+      userId,
+      totalScore,
+      categoryScores,
+      strengths,
+      areasForImprovement,
+      finalAssessment,
       createdAt: new Date().toISOString(),
+    });
+
+    return {
+      success: true,
+      feedbackId: feedback.id,
     };
-
-    let feedbackRef;
-
-    if (feedbackId) {
-      feedbackRef = db.collection("feedback").doc(feedbackId);
-    } else {
-      feedbackRef = db.collection("feedback").doc();
-    }
-
-    await feedbackRef.set(feedback);
-
-    return { success: true, feedbackId: feedbackRef.id };
   } catch (error) {
     console.error("Error saving feedback:", error);
     return { success: false };
@@ -77,16 +78,16 @@ export async function getFeedbackByInterviewId(
 ): Promise<Feedback | null> {
   const { interviewId, userId } = params;
 
-  const querySnapshot = await db
+  const feedback = await db
     .collection("feedback")
     .where("interviewId", "==", interviewId)
     .where("userId", "==", userId)
     .limit(1)
     .get();
 
-  if (querySnapshot.empty) return null;
+  if (feedback.empty) return null;
 
-  const feedbackDoc = querySnapshot.docs[0];
+  const feedbackDoc = feedback.docs[0];
   return { id: feedbackDoc.id, ...feedbackDoc.data() } as Feedback;
 }
 
